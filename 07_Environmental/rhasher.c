@@ -11,12 +11,11 @@
 #endif
 
 enum Errors {
-    BAD_GETREAD_LINE    = 1,
-    BAD_ALGO_GET        = 2,
-    BAD_FILESTRING_NAME = 3,
-    BAD_ALGO_NAME       = 4,
-    BAD_FILE_HASH       = 5,
-    BAD_STRING_HASH     = 6
+    BAD_ALGO_GET        = 1,
+    BAD_FILESTRING_NAME = 2,
+    BAD_ALGO_NAME       = 3,
+    BAD_FILE_HASH       = 4,
+    BAD_STRING_HASH     = 5
 };
 
 enum Constants {
@@ -40,30 +39,33 @@ int main(int argc, char *argv[]) {
 
     while (!NULL) {
         #ifdef READLINE
-            line = readline(NULL);
+            line = (char *)readline(NULL);
             if (!line) {
-                handle_error("Cannot read next line. Error code: %d\n", BAD_GETREAD_LINE);
-                continue;
+                break;
             }
         #else
-            ssize_t nread;
-            nread = getline(&line, 0, stdin);
+            int nread;
+            size_t len;
+            nread = getline(&line, &len, stdin);
             if (nread < 0) {
-                handle_error("Cannot read next line. Error code: %d\n", BAD_GETREAD_LINE);
-                continue;
+                break;
             }
         #endif
 
-        const char *algo = strtok(line, " ");
+        char *algo = strtok(line, " ");
         if (!algo) {
             handle_error("Cannot read name of algorithm. Error code: %d\n", BAD_ALGO_GET);
             continue;
         }
 
-        const char *file_or_string = strtok(NULL, " ");
+        char *file_or_string = strtok(NULL, " ");
         if (!file_or_string) {
             handle_error("Cannot read filename/string. Error code: %d\n", BAD_FILESTRING_NAME);
             continue;
+        }
+
+        if (file_or_string[strlen(file_or_string) - 1] == '\n') {
+            file_or_string[strlen(file_or_string) - 1] = '\0';
         }
 
         int hash_name;
@@ -88,7 +90,7 @@ int main(int argc, char *argv[]) {
                 continue;
             }
         } else {
-            err_code = rhash_msg(hash_name, file_or_string, strlen(file_or_string), buf);
+            err_code = rhash_msg(hash_name, file_or_string + 1, strlen(file_or_string + 1), buf);
             if (err_code < 0) {
                 handle_error("Cannot hash string: %s. Error code: %d\n", file_or_string, BAD_STRING_HASH);
                 continue;
@@ -98,8 +100,6 @@ int main(int argc, char *argv[]) {
         rhash_print_bytes(result, buf, rhash_get_digest_size(hash_name), hash_type);
 
         printf("%s\n", result);
-
-        free(line);
     }
 
     free(line);

@@ -1,25 +1,22 @@
-CC = cc
-CFLAGS = -Wall
-bin_PROGRAMS = rhasher
-rhasher_SOURCES = rhasher.c
-TESTS = sha1_test.sh md5_test.sh
-GENERATES = test-driver *.m4 *.cache compile *.in configure depcomp install-sh missing build *~
+.PHONY: clean
 
-sha1_test.sh:
-	@echo 'echo "SHREK" > sha1_input' >> $@
-	@echo 'echo -n "> " > sha1_output' >> $@
-	@echo 'sha1sum sha1_input | cut -d " " -f 1 >> sha1_output' >> $@
-	@echo 'echo -n "Sha1 sha1_input" | ./rhasher | head -n 1 > rhasher_sha1.out' >> $@
-	@echo 'cmp sha1_output rhasher_sha1.out' >> $@
-	@chmod +x $@
+CC=cc
+CFLAGS=-Wall
+bin_PROGRAMS=rhasher
+rhasher_SOURCES=rhasher.c
+TESTS=sha1sum_test.sh md5sum_test.sh
 
-md5_test.sh:
-	@echo 'echo "SHREK" > md5_input' >> $@
-	@echo 'echo -n "> " > md5_output' >> $@
-	@echo 'md5sum md5_input | cut -d " " -f 1 >> md5_output' >> $@
-	@echo 'echo -n "Md5 md5_input" | ./rhasher | head -n 1 > rhasher_md5.out' >> $@
-	@echo 'cmp md5_output rhasher_md5.out' >> $@
-	@chmod +x $@
+test:
+	@echo "Testing..."
+	@echo -n 'Sha1 "SHREK' | ./rhasher | tail -n 1 > rhasher_output
+	@echo -n "SHREK" | sha1sum | cut -f1 -d ' ' > sha1_output
+	@diff rhasher_output sha1_output
+
+	@echo -n 'Md5 "SHREK' | ./rhasher | tail -n 1 > rhasher_output
+	@echo -n "SHREK" | md5sum | cut -f1 -d ' ' > md5_output
+	@diff rhasher_output md5_output
+
+	@echo "Tests passed"
 
 clean:
-	rm -rf $(GENERATES)
+	git clean -fd
