@@ -1,0 +1,38 @@
+--- amazing0.c	2024-11-22 09:19:02.016271620 +0300
++++ amazing2.c	2024-11-22 09:24:06.799047028 +0300
+@@ -2,9 +2,12 @@
+ #include <stdlib.h>
+ #include <time.h>
+ 
+-#define EMPTY '.'
+-#define WALL  '#'
+-#define ROOMS_IN_ROW 6
++enum ProgramArgs {
++    PROGRAM_NAME = 0,
++    IDENTIFIERS  = 1,
++    ROOMS_IN_ROW = 2,
++    ARGS_NUM     = 3
++};
+ 
+ struct DSU {
+     int *parent;
+@@ -192,9 +195,18 @@
+ }
+ 
+ int main(int argc, char *argv[]) {
++    if (argc != ARGS_NUM) {
++        printf("Usage: %s <empty><wall> <size>\n", argv[PROGRAM_NAME]);
++        exit(1);
++    }
++
+     srand(time(NULL));
+ 
+-    struct Maze *maze = Maze__init(EMPTY, WALL, ROOMS_IN_ROW);
++    char empty          = argv[IDENTIFIERS][0];
++    char wall           = argv[IDENTIFIERS][1];
++    int rooms_in_row    = atoi(argv[ROOMS_IN_ROW]);
++
++    struct Maze *maze = Maze__init(empty, wall, rooms_in_row);
+ 
+     Maze__build(maze);
+ 
